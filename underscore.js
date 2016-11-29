@@ -2,6 +2,7 @@
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 //     Underscore may be freely distributed under the MIT license.
+//     中文注释 by bob-chen @https://github.com/bob-chen  仅做学习用
 
 (function() {
 
@@ -9,9 +10,13 @@
   // --------------
 
   // Establish the root object, `window` in the browser, or `exports` on the server.
+  
+  // root 变量赋值，浏览器中 this 是 「window」 变量，node 中是 「exports」
   var root = this;
 
   // Save the previous value of the `_` variable.
+  
+  // 全局添加 '_' 变量，就是 _.each() 的由来
   var previousUnderscore = root._;
 
   // Save bytes in the minified (but not gzipped) version:
@@ -1540,6 +1545,7 @@
   // popular enough to be bundled in a third party lib, but not be part of
   // an AMD load request. Those cases could generate an error when an
   // anonymous define() is called outside of a loader request.
+  // 兼容 AMD 模块加载
   if (typeof define === 'function' && define.amd) {
     define('underscore', [], function() {
       return _;
