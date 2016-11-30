@@ -20,9 +20,13 @@
   var previousUnderscore = root._;
 
   // Save bytes in the minified (but not gzipped) version:
+
+  // 保存多处用到的常用变量，便于 min 版本的压缩（非 gzip）
   var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype;
 
   // Create quick reference variables for speed access to core prototypes.
+
+  // 创建常用方法的引用，方便快速访问
   var
     push             = ArrayProto.push,
     slice            = ArrayProto.slice,
@@ -31,6 +35,8 @@
 
   // All **ECMAScript 5** native function implementations that we hope to use
   // are declared here.
+
+  // 所有 ES 5 提供的原生实现，如果有则优先使用
   var
     nativeIsArray      = Array.isArray,
     nativeKeys         = Object.keys,
@@ -38,28 +44,46 @@
     nativeCreate       = Object.create;
 
   // Naked function reference for surrogate-prototype-swapping.
+
+  // 一个空对象，用在 baseCreate 函数中，用来在创建对象的时候，设置原型
   var Ctor = function(){};
 
   // Create a safe reference to the Underscore object for use below.
+
+  // 相当于内部整个 underscore 的原型，实例符合单例模式
   var _ = function(obj) {
+
+    // 如果 obj 已经是 _ 的实例，则直接返回
     if (obj instanceof _) return obj;
-    if (!(this instanceof _)) return new _(obj);
+
+    // _([1, 2, 3]) 相当于无 new 构造了一个新的对象，这里在内部使用 new ，
+    // new 的时候又会调用 _ 方法，但是此时 this 已经变为了 _ ，
+    // 所以会执行下面的 this._wrapped = obj 来赋值
+    if (!(this instanceof _)) return new _(obj)
+
+    // obj 不是 _ 而 this 是 _ 的情况下，把 obj 赋值给 this._wrapped 属性
     this._wrapped = obj;
   };
 
   // Export the Underscore object for **Node.js**, with
   // backwards-compatibility for the old `require()` API. If we're in
   // the browser, add `_` as a global object.
+
+  // 暴露 Underscore 对象
   if (typeof exports !== 'undefined') {
     if (typeof module !== 'undefined' && module.exports) {
       exports = module.exports = _;
     }
     exports._ = _;
   } else {
+
+    // root 即为前面的 this，浏览器中 this 是 「window」 变量，node 中是 「exports」
     root._ = _;
   }
 
   // Current version.
+
+  // 设置当前版本信息
   _.VERSION = '1.8.3';
 
   // Internal function that returns an efficient (for current engines) version
