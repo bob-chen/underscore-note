@@ -89,22 +89,43 @@
   // Internal function that returns an efficient (for current engines) version
   // of the passed-in callback, to be repeatedly applied in other Underscore
   // functions.
+
+  // 内部方法,方便一些回调汇的上下文（this对象）用到别的 UnderScore 函数中
+  // 这里函数的 context 参数用来指定 func 函数的上下文，也就是 this 变量
   var optimizeCb = function(func, context, argCount) {
+    
+
+    // 如果没有指定上下文，则不需要修改函数的 this，直接返回原函数
     if (context === void 0) return func;
+
+
     switch (argCount == null ? 3 : argCount) {
+      
+      // 回调函数 func 有一个参数，则返回一个带参数的函数，
+      // 这里 call() 方法能让 func 借用 context 中的方法，即 func 中的 this 指向 context
       case 1: return function(value) {
         return func.call(context, value);
       };
+
+      // 同 case 1
       case 2: return function(value, other) {
         return func.call(context, value, other);
       };
+
+      // 如果有指定 context，但是没有传入 argCount, 即 switch 条件 argCount == null ? 3 : argCount
+      // _.each, _.map
       case 3: return function(value, index, collection) {
         return func.call(context, value, index, collection);
       };
+
+      // 回调有四个参数的情况 _.reduce _.reduceRight
       case 4: return function(accumulator, value, index, collection) {
         return func.call(context, accumulator, value, index, collection);
       };
     }
+
+    // 回调无参数的情况， apply() 功能同 call()，
+    // 不同点是 apply() 的所有参数是通过一个数组来传递的，所以这里参数借用了 arguments 对象
     return function() {
       return func.apply(context, arguments);
     };
@@ -113,13 +134,47 @@
   // A mostly-internal function to generate callbacks that can be applied
   // to each element in a collection, returning the desired result — either
   // identity, an arbitrary callback, a property matcher, or a property accessor.
+
+  // 一个主要的内部函数，用于生成回调，
+  // 包括返回一个迭代函数，或者一些回调函数，一个寻找键值对的函数，或者一个返回对象中某个属性的函数。
   var cb = function(value, context, argCount) {
+
+    // _.identity 返回传入的参数的一个函数，这里主要是作为迭代函数
     if (value == null) return _.identity;
+
+    // value 为函数时，调用上面的 optimizeCb
     if (_.isFunction(value)) return optimizeCb(value, context, argCount);
+
+    // value 为一个对象时，返回判断对象里是否有某个键值对的函数
     if (_.isObject(value)) return _.matcher(value);
+
+    // 都没中，返回获取对象中某个属性的值的函数
     return _.property(value);
   };
+
+  /* _.iteratee 相关用法 */
+  // // No value
+  // _.iteratee();
+  // => _.identity()
+
+  // // Function
+  // _.iteratee(function(n) { return n * 2; });
+  // => function(n) { return n * 2; }
+
+  // // Object
+  // _.iteratee({firstName: 'Chelsea'});
+  // => _.matcher({firstName: 'Chelsea'});
+
+  // // Anything else
+  // _.iteratee('firstName');
+  // => _.property('firstName');
+  // 下面这个例子就是拿出每个对象的 age 值
+  // var stooges = [{name: 'curly', age: 25}, {name: 'moe', age: 21}, {name: 'larry', age: 23}];
+  // _.map(stooges, _.iteratee('age'));
+  // => [25, 21, 23];
   _.iteratee = function(value, context) {
+
+    // Infinity 是一个数值，表示无穷大
     return cb(value, context, Infinity);
   };
 
@@ -1308,6 +1363,8 @@
   };
 
   // Keep the identity function around for default iteratees.
+
+  // 返回传入的参数，主要用来做迭代函数，简化很多迭代函数的书写
   _.identity = function(value) {
     return value;
   };
@@ -1321,6 +1378,14 @@
 
   _.noop = function(){};
 
+  /*
+  var property = function(key) {
+    return function(obj) {
+      return obj == null ? void 0 : obj[key];
+    };
+  };
+  */
+  // 返回对象中某个属性
   _.property = property;
 
   // Generates a function for a given object that returns a given property.
@@ -1332,6 +1397,8 @@
 
   // Returns a predicate for checking whether an object has a given set of
   // `key:value` pairs.
+
+  // 判断一个对象里面是否有某个键值对
   _.matcher = _.matches = function(attrs) {
     attrs = _.extendOwn({}, attrs);
     return function(obj) {
