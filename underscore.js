@@ -179,14 +179,45 @@
   };
 
   // An internal function for creating assigner functions.
+
+  // 内部函数，有三个方法用到了这个内部函数
+  // _.extend & _.extendOwn & _.defaults
+  // _.extend = createAssigner(_.allKeys);
+  // _.extendOwn = _.assign = createAssigner(_.keys);
+  // _.defaults = createAssigner(_.allKeys, true);
   var createAssigner = function(keysFunc, undefinedOnly) {
+    
+    // 返回一个闭包
+    // 返回的函数参数个数 >= 2 时，
+    // 将第二个开始的对象参数的键值对，『继承』给第一个参数
     return function(obj) {
       var length = arguments.length;
+
+      // 传入参数少于两个，或第一个参数为 null，直接返回 obj
       if (length < 2 || obj == null) return obj;
+
+      // 循环第一个参数以外的参数，arguments[1],arguments[2]
       for (var index = 1; index < length; index++) {
+
+        // source 为对应参数，
+        // keys 为 _.keys 或 _.allKeys ， 参考三个调用的地方
         var source = arguments[index],
             keys = keysFunc(source),
             l = keys.length;
+
+        // _.extend 和 _.extendOwn 方法
+        // 没有传入 undefinedOnly 参数，即 !undefinedOnly 为 true
+        // 执行 obj[key] = source[key]
+        // 后面参数的键值对覆盖 obj，
+        // 例如 _.extend(a,b) 则 b 中的属性全部给 a，如果有相同的属性，则 b 覆盖 a
+        // ==========================================
+        // _.defaults 方法，undefinedOnly 参数为 true
+        // 即 !undefinedOnly 为 false
+        // 当 obj[key] 为 undefined 时才覆盖
+        // 即如果有相同的 key 值，取最早出现的 value 值
+        // 例如 _.defaults(a,b) 则 b 中的属性全部给 a，如果有相同的属性，则用 a 的，抛弃 b 的
+        // undefined es5 之前可能被重写，而 void 0 返回 undefined 且 void 不能被重写。
+        // void 任何东西都返回 undefined
         for (var i = 0; i < l; i++) {
           var key = keys[i];
           if (!undefinedOnly || obj[key] === void 0) obj[key] = source[key];
