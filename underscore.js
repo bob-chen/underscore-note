@@ -228,15 +228,25 @@
   };
 
   // An internal function for creating a new object that inherits from another.
+
+  // 一个内部函数，用来创建新的对象
+  // 用在 _.create
   var baseCreate = function(prototype) {
+
+    // prototype 不是对象，返回一个空对象
     if (!_.isObject(prototype)) return {};
+
+    // 检查是否有 ES5 原生的创建对象的方法 nativeCreate = Object.create;
     if (nativeCreate) return nativeCreate(prototype);
+
+    // var Ctor = function(){}; 一个空对象，用来在创建对象的时候，设置原型
     Ctor.prototype = prototype;
     var result = new Ctor;
     Ctor.prototype = null;
     return result;
   };
 
+  // 一个闭包函数，用来获取对象中某些属性 eg: var getLength = property('length');
   var property = function(key) {
     return function(obj) {
       return obj == null ? void 0 : obj[key];
@@ -247,8 +257,21 @@
   // should be iterated as an array or as an object
   // Related: http://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
   // Avoids a very nasty iOS 8 JIT bug on ARM-64. #2094
+
+  // 这里 Math.pow(2, 53)-1 是 JavaScript 中能准确表示整数并能正确比较的最大的数字
+  // 值是 9007199254740991 用 Number.MAX_SAFE_INTEGER 也可以，但是 IE 不兼容 Number.MAX_SAFE_INTEGER
+  // 此处为了兼容 IE。参考 https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
   var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
+
+  // getLength 为一个函数，传入参数为一个对象，返回其 length 属性的值。
+  // property 函数的实现见上几行，返回为一个闭包函数。
   var getLength = property('length');
+
+  // 判断 collection 是不是一个 ArrayLike 对象
+  // 判断条件为： 有 length 属性，并且 length 属性值为 Number 类型，值在 0 到 MAX_ARRAY_INDEX 之间
+  // ArrayLike对象有：数组，arguments，HTML Collection，NodeList，{length:10, name: "abc"}, 字符串，等
+  // 注意，函数也是 ArrayLike 对象，length 是函数对象的一个属性值，指该函数有多少个必须要传入的参数，那些已定义了默认值的参数不算在内
+  // 参考 https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Function/length
   var isArrayLike = function(collection) {
     var length = getLength(collection);
     return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
