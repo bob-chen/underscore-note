@@ -283,14 +283,28 @@
   // The cornerstone, an `each` implementation, aka `forEach`.
   // Handles raw objects in addition to array-likes. Treats all
   // sparse array-likes as if they were dense.
+
+  // each 又叫 forEach,
+  // 遍历对象或 array-like 对象，第一个参数为对应需要遍历的对象，
+  // 第二个参数为遍历函数，每一次遍历都会执行该方法。
+  //    遍历函数传入三个参数，分别为(当前值，index，被遍历的对象)
+  // 第三个参数为上下文对象，即在遍历过程中可以指定 this 变量的指向
   _.each = _.forEach = function(obj, iteratee, context) {
+
+    // 如果有传入 context 则在 optimizeCb 函数中会调用 call/apple 方法，指定 this 值
     iteratee = optimizeCb(iteratee, context);
     var i, length;
+
+    // 类数组对象
     if (isArrayLike(obj)) {
+      
+      // 根据 length 遍历
       for (i = 0, length = obj.length; i < length; i++) {
         iteratee(obj[i], i, obj);
       }
-    } else {
+    } else { // 类似 json 对象
+
+      // 获取所有 key 值
       var keys = _.keys(obj);
       for (i = 0, length = keys.length; i < length; i++) {
         iteratee(obj[keys[i]], keys[i], obj);
@@ -1040,16 +1054,30 @@
   // ----------------
 
   // Keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
+
+  // keys 在 ie9 一下不能通过 for in 来遍历，所以要这样做。
+  // 建一个对象，改写 toString 属性，判断是否可枚举(Enumerable)
+  // IE < 9，{toString: null}.propertyIsEnumerable('toString') 返回 false 被认为不可枚举
+  // 用特性检测的方法判断是否 在 IE < 9 的环境中
   var hasEnumBug = !{toString: null}.propertyIsEnumerable('toString');
+  
+  // IE9 以下不能用 for in 来枚举的属性值的集合
   var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
                       'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
 
+  // 用于在 IE < 9 的情况下，收集没法通过 for in 拿到的属性
   function collectNonEnumProps(obj, keys) {
     var nonEnumIdx = nonEnumerableProps.length;
     var constructor = obj.constructor;
+
+    // 如果 constructor 被重写，则 proto = ObjProto
+    // 如果没被重写，则 proto = obj.constructor.prototype
+    // 此处 ObjProto = Object.prototype
     var proto = (_.isFunction(constructor) && constructor.prototype) || ObjProto;
 
     // Constructor is a special case.
+
+    // 特殊处理 constructor 属性
     var prop = 'constructor';
     if (_.has(obj, prop) && !_.contains(keys, prop)) keys.push(prop);
 
@@ -1063,17 +1091,31 @@
 
   // Retrieve the names of an object's own properties.
   // Delegates to **ECMAScript 5**'s native `Object.keys`
+
+  // 返回一个对象的 key list，里面只包含对象自身特定的 keys，不包含原型链上的
+  // 通过 hasOwnProperty 过滤
   _.keys = function(obj) {
+
+    // 不是对象返回空
     if (!_.isObject(obj)) return [];
+
+    // 如果支持 es5 的 Object.keys 方法，则用原生的。
     if (nativeKeys) return nativeKeys(obj);
+
     var keys = [];
+
+    // 通过 hasOwnProperty 判断对象是否含有特定的自身属性
     for (var key in obj) if (_.has(obj, key)) keys.push(key);
     // Ahem, IE < 9.
+
+    // IE9 以下不能用 for in 来获取某些属性，比如 toString，在 IE9 以下被认为是不可枚举的
     if (hasEnumBug) collectNonEnumProps(obj, keys);
     return keys;
   };
 
   // Retrieve all the property names of an object.
+
+  // 获取对象所有的 key list, 包含原型链上的
   _.allKeys = function(obj) {
     if (!_.isObject(obj)) return [];
     var keys = [];
@@ -1402,6 +1444,8 @@
 
   // Shortcut function for checking if an object has a given property directly
   // on itself (in other words, not on a prototype).
+
+  // 判断对象中是否含有特定的自身属性
   _.has = function(obj, key) {
     return obj != null && hasOwnProperty.call(obj, key);
   };
