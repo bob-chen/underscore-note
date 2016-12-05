@@ -8,14 +8,18 @@
       equal(num, i + 1, 'each iterators provide value and iteration count');
     });
 
+
+    // 测试指定 context，即改变 this 为 {multiplier : 5}
     var answers = [];
     _.each([1, 2, 3], function(num){ answers.push(num * this.multiplier);}, {multiplier : 5});
     deepEqual(answers, [5, 10, 15], 'context object property accessed');
 
+    // 这里是否应该用 _.forEach ?
     answers = [];
     _.each([1, 2, 3], function(num){ answers.push(num); });
     deepEqual(answers, [1, 2, 3], 'aliased as "forEach"');
 
+    // 忽略原型上的属性，因为遍历时用的是 var keys = _.keys(obj);
     answers = [];
     var obj = {one : 1, two : 2, three : 3};
     obj.constructor.prototype.four = 4;
