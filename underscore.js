@@ -1507,6 +1507,8 @@
   // Run a function **n** times.
   _.times = function(n, iteratee, context) {
     var accum = Array(Math.max(0, n));
+    console.log(n)
+    // 设置 argCount 为1，只接受一个参数，optimizeCb = function(func, context, argCount) 
     iteratee = optimizeCb(iteratee, context, 1);
     for (var i = 0; i < n; i++) accum[i] = iteratee(i);
     return accum;
@@ -1663,8 +1665,13 @@
   };
 
   // Add a "chain" function. Start chaining a wrapped Underscore object.
+
+  // 添加一个 『chain』方法，用来支持链式调用
   _.chain = function(obj) {
+    // 转成 OOP 形式
     var instance = _(obj);
+
+    // 添加 _chain 属性，并返回
     instance._chain = true;
     return instance;
   };
@@ -1676,16 +1683,31 @@
   // underscore functions. Wrapped objects may be chained.
 
   // Helper function to continue chaining intermediate results.
+
+  // 一个 Helper 函数
   var result = function(instance, obj) {
+    console.log(instance._chain)
+    // 如果需要链式操作，则对 obj
     return instance._chain ? _(obj).chain() : obj;
   };
 
   // Add your own custom functions to the Underscore object.
+
+  // 添加方法到原型链上
+  // obj 参数必须是一个对象（JavaScript 中一切皆对象）
+  // 且自己的方法定义在 obj 的属性上
+  // 如 obj.myFunc = function() {...}
+  // 形如 {myFunc: function(){}}
+  // 之后便可使用如下: _.myFunc(..) 或者 OOP _(..).myFunc(..)
   _.mixin = function(obj) {
+
+    // 遍历 obj 的 key，
     _.each(_.functions(obj), function(name) {
       var func = _[name] = obj[name];
       _.prototype[name] = function() {
         var args = [this._wrapped];
+        console.log("abc")
+        // 把 arguments 和 args 合二为一，push = ArrayProto.push
         push.apply(args, arguments);
         return result(this, func.apply(_, args));
       };
