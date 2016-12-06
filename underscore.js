@@ -1673,6 +1673,9 @@
 
     // 添加 _chain 属性，并返回
     instance._chain = true;
+
+    // 返回对象，链式调用主要是把 obj 变成 underscore 对象
+    // 整个方法除了设置 _chain 属性，其它和返回 _(obj) 一样
     return instance;
   };
 
@@ -1682,12 +1685,18 @@
   // can be used OO-style. This wrapper holds altered versions of all the
   // underscore functions. Wrapped objects may be chained.
 
+
+  // OOP
+  // 如果 _ 被当做方法调用，即 _(100) 这种形式，则返回一个被包装的对象，
+  // 这个对象可以使用所有 _ 的方法，并且支持链式调用
+
+
   // Helper function to continue chaining intermediate results.
 
   // 一个 Helper 函数
   var result = function(instance, obj) {
     console.log(instance._chain)
-    // 如果需要链式操作，则对 obj
+    // 如果需要链式操作，则把 obj 变成 underscore 对象，并设置 _chain 属性
     return instance._chain ? _(obj).chain() : obj;
   };
 
@@ -1701,20 +1710,32 @@
   // 之后便可使用如下: _.myFunc(..) 或者 OOP _(..).myFunc(..)
   _.mixin = function(obj) {
 
-    // 遍历 obj 的 key，
+    // 遍历 obj 的 key，是函数的放进循环
     _.each(_.functions(obj), function(name) {
+
+      // 取得函数引用
       var func = _[name] = obj[name];
+
+      // 将 name 方法挂到原型链上
       _.prototype[name] = function() {
+
+        // 取得，第一个参数，见 _ 的定义，this._wrapped = obj;
+        // _(100).times(function(){}) 中，times 的参数 100 就是这里来的
         var args = [this._wrapped];
-        console.log("abc")
+
         // 把 arguments 和 args 合二为一，push = ArrayProto.push
         push.apply(args, arguments);
+
+        // 执行 func 方法，并对链式调用进行处理
         return result(this, func.apply(_, args));
       };
     });
   };
 
   // Add all of the Underscore functions to the wrapper object.
+
+  // 将 underscore 方法添加给 _ , 即给 _.prototype 添加一堆方法
+  // 让 underscore 对象支持 OOP 调用， eg: _(100).times(...)
   _.mixin(_);
 
   // Add all mutator Array functions to the wrapper.

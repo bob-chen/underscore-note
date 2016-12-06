@@ -28,6 +28,7 @@
     delete obj.constructor.prototype.four;
 
     // ensure the each function is JITed
+    // 确保 each 方法是即时的， 关于 _(1000).times() 这种链式调用，参看源码 _.mixin 的实现
     _(1000).times(function() { _.each([], function(){}); });
     var count = 0;
     obj = {1 : 'foo', 2 : 'bar', 3 : 'baz'};
