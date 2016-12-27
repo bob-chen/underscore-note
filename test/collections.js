@@ -35,6 +35,7 @@
     _.each(obj, function(value, key){ count++; });
     equal(count, 3, 'the fun should be called only 3 times');
 
+    // 验证回调函数中的 arr 是原来的数组
     var answer = null;
     _.each([1, 2, 3], function(num, index, arr){ if (_.include(arr, num)) answer = true; });
     ok(answer, 'can reference the original collection from inside the iterator');

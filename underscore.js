@@ -16,7 +16,7 @@
 
   // Save the previous value of the `_` variable.
   
-  // 全局添加 '_' 变量，就是 _.each() 的由来
+  // 全局添加 '_' 变量，就是 _.each() 中 _ 的由来
   var previousUnderscore = root._;
 
   // Save bytes in the minified (but not gzipped) version:
@@ -269,7 +269,7 @@
 
   // 判断 collection 是不是一个 ArrayLike 对象
   // 判断条件为： 有 length 属性，并且 length 属性值为 Number 类型，值在 0 到 MAX_ARRAY_INDEX 之间
-  // ArrayLike对象有：数组，arguments，HTML Collection，NodeList，{length:10, name: "abc"}, 字符串，等
+  // ArrayLike对象有：数组，arguments，HTML Collection，NodeList，{length:10, name: "abc"}, 字符串，函数等
   // 注意，函数也是 ArrayLike 对象，length 是函数对象的一个属性值，指该函数有多少个必须要传入的参数，那些已定义了默认值的参数不算在内
   // 参考 https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Function/length
   var isArrayLike = function(collection) {
@@ -414,9 +414,17 @@
 
   // Determine if the array or object contains a given item (using `===`).
   // Aliased as `includes` and `include`.
+
+  // 判断数组或者对象中是否有给定的元素 （使用 '==='）
+  // 别名是 「includes」 和 「include」
   _.contains = _.includes = _.include = function(obj, item, fromIndex, guard) {
+    // 判断 obj 是不是 ArrayLike 对象
     if (!isArrayLike(obj)) obj = _.values(obj);
+
+    // 起始位置，如果没有指定，或者 grard 为 true 则从 0 开始
     if (typeof fromIndex != 'number' || guard) fromIndex = 0;
+
+    // _.indexOf 寻找数组中是否有某个元素，查到返回其下标，查不到返回 -1
     return _.indexOf(obj, item, fromIndex) >= 0;
   };
 
@@ -821,7 +829,15 @@
   // or -1 if the item is not included in the array.
   // If the array is large and already in sort order, pass `true`
   // for **isSorted** to use binary search.
+
+  // 返回数组中元素第一次出现的位置的下标值，如果数组中没有则返回 -1
+  // 如果数组很大而且是有序的，则 「isSorted」 参数可以传入 true，这样查找效率会比较高，因为用的是二分查找
+  // _.indexOf(obj, item, fromIndex) 第三个参数也可以是 「fromIndex」 表示开始位置
+  // 这里的 createIndexFinder 方法是一个产生函数的「机器」
   _.indexOf = createIndexFinder(1, _.findIndex, _.sortedIndex);
+
+  // 类似上面的 _.indexOf, 不过是反向查找
+  // 第三个参数可以是 「fromIndex」表示从倒数第几个开始往前查找
   _.lastIndexOf = createIndexFinder(-1, _.findLastIndex);
 
   // Generate an integer Array containing an arithmetic progression. A port of
@@ -1126,7 +1142,12 @@
   };
 
   // Retrieve the values of an object's properties.
+
+  // 返回一个对象的属性值数组，不包括原型链上的
+  // _.values({"a":1,"b":2,"c":3})  ===>  [1,2,3]
   _.values = function(obj) {
+
+    // _.keys 通过 hasOwnProperty 过滤原型链上的值
     var keys = _.keys(obj);
     var length = keys.length;
     var values = Array(length);
