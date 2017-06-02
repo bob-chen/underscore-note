@@ -246,7 +246,8 @@
     return result;
   };
 
-  // 一个闭包函数，用来获取对象中某些属性 eg: var getLength = property('length');
+  // 一个闭包函数，用来获取对象中某些属性 
+  // eg: var getLength = property('length');
   var property = function(key) {
     return function(obj) {
       return obj == null ? void 0 : obj[key];
@@ -310,42 +311,76 @@
         iteratee(obj[keys[i]], keys[i], obj);
       }
     }
+
+    // 返回 obj，用于链式调用
     return obj;
   };
 
   // Return the results of applying the iteratee to each element.
+
+  // 和 _.each 的参数一样
   _.map = _.collect = function(obj, iteratee, context) {
+
+    // iteratee 为函数时，cb 会像 _.each 中那样调用 optimizeCb
     iteratee = cb(iteratee, context);
+
+    // ArrayLike 对象的判断条件：有 length 属性，并且 length 属性值为 Number 类型，值在 0 到 MAX_ARRAY_INDEX 之间
+    // 这里如果 obj 是对象，则获取对象的 keys，因为对象在 isArrayLike 返回 false，所以前面要有 !
+    // 如果 obj 为 null， 则执行 _.keys 返回 []
     var keys = !isArrayLike(obj) && _.keys(obj),
+
+        // obj 为对象，keys 有值，length = keys.length
+        // obj 为数组，keys 为 false，length = obj.length
         length = (keys || obj).length,
+
+        // 建立放结果的数组
         results = Array(length);
+
+    // 如果传入的是数组对象，则用
     for (var index = 0; index < length; index++) {
+
+      // obj 为对象，keys 有值，当前 key 为对应键值
+      // obj 为数组，keys 为 false，当前 key 由数组下标代替
       var currentKey = keys ? keys[index] : index;
+
+      // 执行函数，传入(当前 key 对应值，当前 key，被遍历的对象)
       results[index] = iteratee(obj[currentKey], currentKey, obj);
     }
     return results;
   };
 
   // Create a reducing function iterating left or right.
+
+  // 创建归并函数，dir = 1 从左遍历，dir = -1 从右遍历
   function createReduce(dir) {
     // Optimized iterator function as using arguments.length
     // in the main function will deoptimize the, see #1991.
+
+    // 对象，遍历函数，初始值，keys，
     function iterator(obj, iteratee, memo, keys, index, length) {
       for (; index >= 0 && index < length; index += dir) {
         var currentKey = keys ? keys[index] : index;
+
+        // 计算 memo，给下次循环用，memo 在这里是全局变量？
         memo = iteratee(memo, obj[currentKey], currentKey, obj);
       }
+
+      // 返回结果
       return memo;
     }
 
+    // memo 为结果的一个初始值
     return function(obj, iteratee, memo, context) {
       iteratee = optimizeCb(iteratee, context, 4);
       var keys = !isArrayLike(obj) && _.keys(obj),
           length = (keys || obj).length,
+          // 从左或从右开始遍历
           index = dir > 0 ? 0 : length - 1;
       // Determine the initial value if none is provided.
       if (arguments.length < 3) {
+        // 如果参数小于 3 个，则没有指定初始值 memo，用第一个遍历值作为初始值
         memo = obj[keys ? keys[index] : index];
+        // 同时，index 向左或者右移动一位
         index += dir;
       }
       return iterator(obj, iteratee, memo, keys, index, length);
@@ -354,9 +389,11 @@
 
   // **Reduce** builds up a single result from a list of values, aka `inject`,
   // or `foldl`.
+  // 左遍历的归并函数
   _.reduce = _.foldl = _.inject = createReduce(1);
 
   // The right-associative version of reduce, also known as `foldr`.
+  // 右遍历的归并函数
   _.reduceRight = _.foldr = createReduce(-1);
 
   // Return the first value which passes a truth test. Aliased as `detect`.
@@ -1504,7 +1541,7 @@
     };
   };
   */
-  // 返回对象中某个属性
+  // 返回对象中某个属性的函数
   _.property = property;
 
   // Generates a function for a given object that returns a given property.

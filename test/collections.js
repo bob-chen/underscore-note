@@ -152,31 +152,43 @@
   });
 
   test('map', function() {
+
+    // 基本 map 测试
     var doubled = _.map([1, 2, 3], function(num){ return num * 2; });
     deepEqual(doubled, [2, 4, 6], 'doubled numbers');
 
+
+    // 测试修改 this 值
     var tripled = _.map([1, 2, 3], function(num){ return num * this.multiplier; }, {multiplier : 3});
     deepEqual(tripled, [3, 6, 9], 'tripled numbers with context');
 
+    // 测试 对象调用形式
     doubled = _([1, 2, 3]).map(function(num){ return num * 2; });
     deepEqual(doubled, [2, 4, 6], 'OO-style doubled numbers');
 
+    // 伪造 length 属性的 arraylike obj
     var ids = _.map({length: 2, 0: {id: '1'}, 1: {id: '2'}}, function(n){
       return n.id;
     });
     deepEqual(ids, ['1', '2'], 'Can use collection methods on Array-likes.');
 
+    // obj 为 null 时，_.keys 返回 []，results = Array(0)
     deepEqual(_.map(null, _.noop), [], 'handles a null properly');
 
+    // 返回的是 [5].length
     deepEqual(_.map([1], function() {
       return this.length;
     }, [5]), [1], 'called with context');
 
     // Passing a property name like _.pluck.
+
+    // name 作为迭代函数传进去时，在 iteratee = cb(iteratee, context); 中
+    // cb 函数返回  _.property(value); 这里 value 为 'name'
     var people = [{name : 'moe', age : 30}, {name : 'curly', age : 50}];
     deepEqual(_.map(people, 'name'), ['moe', 'curly'], 'predicate string map to object properties');
   });
 
+  // _.map = _.collect = ....
   test('collect', function() {
     strictEqual(_.map, _.collect, 'alias for map');
   });
@@ -185,6 +197,7 @@
     var sum = _.reduce([1, 2, 3], function(sum, num){ return sum + num; }, 0);
     equal(sum, 6, 'can sum up an array');
 
+    // 指定 this 值
     var context = {multiplier : 3};
     sum = _.reduce([1, 2, 3], function(sum, num){ return sum + num * this.multiplier; }, 0, context);
     equal(sum, 18, 'can reduce with a context object');
@@ -195,9 +208,11 @@
     sum = _([1, 2, 3]).reduce(function(sum, num){ return sum + num; }, 0);
     equal(sum, 6, 'OO-style reduce');
 
+    // 没有指定初始值的时候，用第一个值作为初始值
     sum = _.reduce([1, 2, 3], function(sum, num){ return sum + num; });
     equal(sum, 6, 'default initial value');
 
+    // 1*2 = 2 => 2*3 =6 => 6*4 = 24
     var prod = _.reduce([1, 2, 3, 4], function(prod, num){ return prod * num; });
     equal(prod, 24, 'can reduce via multiplication');
 
@@ -207,6 +222,7 @@
     equal(_.reduce([], _.noop), undefined, 'returns undefined when collection is empty and no initial value');
   });
 
+  // _.reduce = _.foldl = _.inject
   test('foldl', function() {
     strictEqual(_.reduce, _.foldl, 'alias for reduce');
   });
@@ -218,6 +234,7 @@
     list = _.reduceRight(['foo', 'bar', 'baz'], function(memo, str){ return memo + str; });
     equal(list, 'bazbarfoo', 'default initial value');
 
+    // 如果传入对象，会用 key 的值做运算
     var sum = _.reduceRight({a: 1, b: 2, c: 3}, function(sum, num){ return sum + num; });
     equal(sum, 6, 'default initial value on object');
 
@@ -261,6 +278,7 @@
     deepEqual(args, expected);
   });
 
+  // _.reduceRight = _.foldr
   test('foldr', function() {
     strictEqual(_.reduceRight, _.foldr, 'alias for reduceRight');
   });
